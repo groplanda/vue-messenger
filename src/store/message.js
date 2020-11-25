@@ -8,6 +8,16 @@ class Message {
   }
 }
 
+class Chat {
+  constructor (url, name, avatar, time = null, message = null) {
+    this.url = url;
+    this.name = name;
+    this.avatar = avatar;
+    this.time = time;
+    this.message = message;
+  }
+}
+
 export default {
   state: () => ({
     messages: null,
@@ -18,7 +28,10 @@ export default {
       state.messages = payload;
     },
     pushMessage ( state, payload) {
-      state.messages.push(payload)
+      state.messages.push(payload);
+    },
+    setChats ( state, payload) {
+      state.chats = payload;
     }
   },
   actions: {
@@ -122,6 +135,44 @@ export default {
         commit('setMessages', messageList);
         commit('setLoading', false);
         return avatars; //вернем аватарки в компонент
+
+      } catch(error) {
+        commit('setLoading', false);
+        commit('setError', error.message);
+        throw error;
+      }
+    },
+    async fetchChatsByUserId({commit}, uid) {
+      commit('clearError');
+      commit('setLoading', true);
+      try {
+        const chatsRef = await firebase.database().ref('chats').once('value'), // получим Object сообщений по user id
+              chats = chatsRef.val(),
+              resultChat = [];
+
+            Object.keys(chats).forEach(chat => {
+              if(chats[chat].members[uid] == uid) {
+                const ob = chats[chat],
+                      interlocutorId = Object.values(ob.members).find(user => user !== uid); // id собеседника
+                      let lastMessageTime = null;
+                      let lastMessage = null
+                      if(ob.messages) {
+                        lastMessageTime = Object.keys(ob.messages).slice(-1).toString(); // время последнего сообщения
+                        lastMessage = ob.messages[lastMessageTime].message; // последнее сообщение
+                      }
+                      firebase.database().ref(`users/${interlocutorId}`).once('value') // получим собеседника по id
+                      .then(dataSnapshot => {
+                        return dataSnapshot.val();
+                      })
+                      .then(interlocutor => {
+                        resultChat.push(new Chat(chat, interlocutor.name, interlocutor.avatar, lastMessageTime, lastMessage)) // создадим новый чат
+                      })
+                      .then(() => {
+                        commit('setChats', resultChat);
+                        commit('setLoading', false);
+                      })
+              }
+            });
 
       } catch(error) {
         commit('setLoading', false);
