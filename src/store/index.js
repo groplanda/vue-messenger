@@ -11,7 +11,7 @@ export default new Vuex.Store({
     init({ dispatch }) {
       return new Promise((resolve) => {
         const firebaseConfig = {
-          apiKey: "AIzaSyBQ4JU12gQ5WZNA5oZ98c0L3ygJSRXOpZQ",
+          apiKey: process.env.VUE_APP_KEY,
           authDomain: "vue-messenger-77810.firebaseapp.com",
           databaseURL: "https://vue-messenger-77810.firebaseio.com",
           projectId: "vue-messenger-77810",
@@ -30,7 +30,6 @@ export default new Vuex.Store({
             resolve();
           }
         });
-
       })
     },
   },

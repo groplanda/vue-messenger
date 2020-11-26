@@ -92,7 +92,6 @@ const user = {
     },
     /*
       Получим пользователя по id из route.params
-      Вернем обратно Object
     */
     async getUserById({ commit }, id) {
       commit('clearError');
@@ -104,7 +103,6 @@ const user = {
           ...user,
           url: id
         }
-
       } catch (error) {
         commit('setLoading', false);
         commit('setError', error.message);

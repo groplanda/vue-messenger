@@ -42,7 +42,7 @@ export default {
     onLogout () {
       this.$store.dispatch('logoutUser')
       .then(() => {
-        this.$router.push('/');
+        this.$router.push('/?success=true');
       })
       .catch(error => {
         console.log(error);

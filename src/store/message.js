@@ -42,6 +42,7 @@ export default {
     async startChat ({ commit, dispatch }, users) {
       commit('clearError');
       commit('setLoading', true);
+      commit('setMessages', false); //очистим state
       try {
         let url = await dispatch('findChat', users); // Поищем готовый чат
         if(!url) { // если его нет, то создадим
@@ -65,7 +66,6 @@ export default {
         members[to] = to;
         members[from] = from;
         const chatRef = await firebase.database().ref('chats').push({ members });
-        commit('setMessages', null); //очистим state
         return chatRef.key; // вернем key == new url
       } catch(error) {
         commit('setError', error.message);
@@ -117,6 +117,7 @@ export default {
     async fetchMessageById({dispatch, commit}, url) {
       commit('clearError');
       commit('setLoading', true);
+      commit('setMessages', false); //очистим state
       try {
         const chatRef = await firebase.database().ref(`chats/${url}/messages`).once('value'), // получим Object сообщений по url из route.params
               messages = chatRef.val(),
@@ -125,16 +126,20 @@ export default {
         /*
           Создадим Array сообщений
         */
-        Object.keys(messages).forEach(message => {
-          const ob = messages[message]
-          messageList.push(new Message(ob.id, ob.message, message));
-          usersId.add(ob.id); // получим уникальные id собеседников (2)
-        })
-        const avatars = await dispatch('getUsersAvatar', usersId); // получим ключ и ссылку на аватарку
-
+        if(messages) {
+          Object.keys(messages).forEach(message => {
+            const ob = messages[message]
+            messageList.push(new Message(ob.id, ob.message, message));
+            usersId.add(ob.id); // получим уникальные id собеседников (2)
+          })
+          const avatars = await dispatch('getUsersAvatar', usersId); // получим ключ и ссылку на аватарку
+          commit('setMessages', messageList);
+          commit('setLoading', false);
+          //вернем аватарки в компонент
+          return avatars;
+        }
         commit('setMessages', messageList);
         commit('setLoading', false);
-        return avatars; //вернем аватарки в компонент
 
       } catch(error) {
         commit('setLoading', false);
@@ -160,6 +165,7 @@ export default {
                         lastMessageTime = Object.keys(ob.messages).slice(-1).toString(); // время последнего сообщения
                         lastMessage = ob.messages[lastMessageTime].message; // последнее сообщение
                       }
+
                       firebase.database().ref(`users/${interlocutorId}`).once('value') // получим собеседника по id
                       .then(dataSnapshot => {
                         return dataSnapshot.val();
@@ -171,6 +177,12 @@ export default {
                         commit('setChats', resultChat);
                         commit('setLoading', false);
                       })
+                      .catch(error => {
+                        console.log(error);
+                      })
+              } else {
+                commit('setChats', null);
+                commit('setLoading', false);
               }
             });
 

@@ -90,10 +90,10 @@ export default {
         }
         this.$store.dispatch('sendMessage', message)
         .then(() => {
+          this.$v.$reset();
           this.message = null;
         })
       }
-
     },
     onBack() {
       this.$router.go(-1);

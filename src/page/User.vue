@@ -27,26 +27,33 @@ export default {
       return this.$store.getters.getError;
     },
     currentUser () {
-      return this.$store.getters.getUser.id === this.user.id;
+      if(this.$store.getters.getUserAuth && this.$store.getters.getUser.id === this.user.id) {
+        return true;
+      }
+      return false;
     },
   },
   methods: {
     closeMessage () {
       this.$store.dispatch('clearError');
+    },
+    getUser (id) {
+      this.$store.dispatch('getUserById', id)
+      .then(userData => {
+        this.user = userData;
+        this.$store.dispatch('setLoading', false);
+      })
+      .catch(error => console.log(error))
+    }
+  },
+  watch: {
+    "$route.params.id"(val) {
+      this.getUser(val);
     }
   },
   created () {
     const id = this.$route.params.id;
-    this.$store.dispatch('getUserById', id)
-    .then(data => {
-      this.user = data;
-    })
-    .catch(error => {
-      console.log(error);
-    })
-    .finally(() => {
-      this.$store.dispatch('setLoading', false);
-    })
+      this.getUser(id);
   },
 }
 </script>

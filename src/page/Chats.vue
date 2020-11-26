@@ -2,9 +2,10 @@
   <div class="chats">
     <h1 class="chats__title start-title">Chats</h1>
     <Preloader v-if="isLoading" />
-    <ul class="chats__list">
+    <ul class="chats__list" v-if="chats">
       <SingleChat v-for="chat of chats" :key="chat.time" :chat="chat" />
     </ul>
+    <p class="search__nothing" v-else>Чатов пока нет...</p>
   </div>
 </template>
 <script>
