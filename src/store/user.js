@@ -78,7 +78,8 @@ const user = {
             name: ob.name,
             email: ob.email,
             about: ob.about,
-            avatar: ob.avatar
+            avatar: ob.avatar,
+            online: ob.online,
           })
         })
         commit('setSearchUsers', resultUsers);
@@ -128,6 +129,8 @@ const user = {
             avatar: 'https://cdn.discordapp.com/icons/540351734862577666/59f174ee972fa87abf4b2816e70283a4.png'
           });
         const userUrl = await dispatch('getUserId', query.user.uid); // Получим id авторизированного пользователя
+
+        dispatch('setOnlineStatus', {status: true, uid: userUrl}); // установим статус online true
         commit('setUser', new User(query.user.uid, userUrl));
         commit('setLoading', false);
 
@@ -146,6 +149,9 @@ const user = {
       try {
         const query = await firebase.auth().signInWithEmailAndPassword(email, password),  // метод firebase вернет id database.auth
               userUrl = await dispatch('getUserId', query.user.uid); // Получим id авторизированного пользователя
+
+        dispatch('setOnlineStatus', {status: true, uid: userUrl}); // установим статус online true
+
         commit('setUser', new User(query.user.uid, userUrl));
         commit('setLoading', false);
 
@@ -158,12 +164,18 @@ const user = {
     /*
       Выход из системы
     */
-    async logoutUser ({ commit }) {
-      await firebase.auth().signOut().then(function() {
-        commit('setUser', null); // обнуляем данные авторизированного пользователя
-      }).catch(function(error) {
+    async logoutUser ({ commit, getters, dispatch }) {
+      const uid = getters.getUser.url;
+      try {
+        await firebase.auth().signOut();
+
+        dispatch('setOnlineStatus', {status: false, uid}); // установим статус online false
+
+        commit('setUser', null);
+      } catch (error) {
+        commit('setError', error.message)
         throw error;
-      });
+      }
     },
     /*
       Получим id авторизированного пользователя
@@ -211,6 +223,20 @@ const user = {
           commit('setError', error.message)
           throw error;
         }
+    },
+    /*
+      установить статус online true / false
+    */
+    async setOnlineStatus({ commit }, {status, uid}) {
+      commit('clearError');
+      try {
+        await firebase.database().ref('/users').child(uid).update({
+          online: status,
+        });
+      } catch (error) {
+        commit('setError', error.message)
+        throw error;
+      }
     },
     /*
       Фильтрация пользователей

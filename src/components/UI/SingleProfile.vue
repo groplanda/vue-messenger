@@ -5,7 +5,7 @@
     </div>
     <div class="chats__info">
       <h4 class="chats__info-name">
-        {{ user.name }}
+        {{ user.name }} <span class="status" :class="onlineClass"></span>
       </h4>
       <div class="chats__content">
         <p class="chats__content-message">
@@ -29,6 +29,14 @@ export default {
     viewUser (id) {
       this.$router.push({ name: 'user', params: { id } })
     }
-  }
+  },
+  computed: {
+    onlineClass () {
+      return {
+        active: this.user.online,
+        'no-active': !this.user.online,
+      }
+    }
+  },
 }
 </script>

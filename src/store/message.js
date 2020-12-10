@@ -9,12 +9,13 @@ class Message {
 }
 
 class Chat {
-  constructor (url, name, avatar, time = null, message = null) {
+  constructor (url, name, avatar, time = null, message = null, online = false) {
     this.url = url;
     this.name = name;
     this.avatar = avatar;
     this.time = time;
     this.message = message;
+    this.online = online;
   }
 }
 
@@ -147,6 +148,9 @@ export default {
         throw error;
       }
     },
+    /*
+      Получим все чаты пользователя по id
+    */
     async fetchChatsByUserId({commit}, uid) {
       commit('clearError');
       commit('setLoading', true);
@@ -156,7 +160,7 @@ export default {
               resultChat = [];
 
             Object.keys(chats).forEach(chat => {
-              if(chats[chat].members[uid] == uid) {
+              if(chats[chat].members[uid] == uid) { // если авторизированный пользователь есть в этом чате
                 const ob = chats[chat],
                       interlocutorId = Object.values(ob.members).find(user => user !== uid); // id собеседника
                       let lastMessageTime = null;
@@ -171,7 +175,7 @@ export default {
                         return dataSnapshot.val();
                       })
                       .then(interlocutor => {
-                        resultChat.push(new Chat(chat, interlocutor.name, interlocutor.avatar, lastMessageTime, lastMessage)) // создадим новый чат
+                        resultChat.push(new Chat(chat, interlocutor.name, interlocutor.avatar, lastMessageTime, lastMessage, interlocutor.online)) // создадим новый чат
                       })
                       .then(() => {
                         commit('setChats', resultChat);
@@ -180,7 +184,7 @@ export default {
                       .catch(error => {
                         console.log(error);
                       })
-              } else {
+              } else { // если чатов нет
                 commit('setChats', null);
                 commit('setLoading', false);
               }
@@ -196,6 +200,9 @@ export default {
   getters: {
     getMessages (state) {
       return state.messages;
+    },
+    getLastMessages ( state) {
+      return state.messages.slice(-5);
     },
     getChats (state) {
       return state.chats;
