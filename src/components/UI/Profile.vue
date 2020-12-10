@@ -5,6 +5,7 @@
     </div>
     <!--profile start-->
     <h1 class="user__name start-title">{{ info.name }}</h1>
+    <p class="user__info-status" :class="onlineClass">{{ info.online ? 'Online' : 'Offline' }}</p>
     <div class="user__info">
       <p class="user__info-descr">
         {{ info.about }}
@@ -47,6 +48,14 @@ export default {
       default: false
     }
   },
+  computed: {
+    onlineClass () {
+      return {
+        active: this.info.online,
+        'no-active': !this.info.online,
+      }
+    }
+  },
   methods: {
     setImage (image) {
       this.info.avatar = image
@@ -63,6 +72,6 @@ export default {
       })
       .catch(error => console.log(error))
     }
-  }
+  },
 }
 </script>

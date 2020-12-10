@@ -106,6 +106,9 @@ export default {
       this.avatars = avatarsData;
     })
     .catch(error => console.log(error))
+  },
+  mounted () {
+    document.body.scrollIntoView(false);
   }
 }
 </script>

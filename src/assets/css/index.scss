@@ -232,6 +232,15 @@ textarea.chat-input {
   &__name {
     margin-bottom: 16px;
   }
+  &__info-status {
+    margin-bottom: 16px;
+    &.active {
+      color: #6ea96e;
+    }
+    &.no-active {
+      color: #FF4D00;
+    }
+  }
   &__info {
     margin-bottom: 32px;
   }
@@ -329,6 +338,22 @@ textarea.chat-input {
     line-height: 18px;
     color: #000000;
     margin-bottom: 6px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    span {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      margin-left: 10px;
+      display: flex;
+      &.active {
+        background-color:#6ea96e;
+      }
+      &.no-active {
+        background-color: #FF4D00;
+      }
+    }
   }
   &__content {
     height: 36px;

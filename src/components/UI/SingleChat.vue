@@ -5,7 +5,7 @@
     </div>
     <div class="chats__info">
       <h4 class="chats__info-name">
-        {{ chat.name }}
+        {{ chat.name }} <span class="status" :class="onlineClass"></span>
       </h4>
       <div class="chats__content">
         <p class="chats__content-message">
@@ -31,6 +31,12 @@ export default {
         return date.getHours() + ':' + date.getMinutes();
       }
       return null;
+    },
+    onlineClass () {
+      return {
+        active: this.chat.online,
+        'no-active': !this.chat.online,
+      }
     },
   },
   methods: {
